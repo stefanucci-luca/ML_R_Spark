@@ -1,0 +1,92 @@
+
+
+
+source ~/Desktop/fce_env/bin/activate
+
+source ~/Desktop/fce_env/teamtrynka-openrc.sh 
+
+python3 ~/Desktop/osdataproc/osdataproc.py \
+    create --public-key ~/.ssh/id_rsa.pub \
+    --num-workers 10 --flavour m2.small \
+    --lustre-network lustre-hgi04 \
+    --image-name bionic-WTSI-lustre_docker_162460_3f325f3a _sparklyr_ml
+
+```
+insert pwd that will be requested again in the following steps
+```
+
+ssh-keyscan -t rsa 172.27.25.199
+
+echo "172.27.25.199 ssh-rsa AAAAB3NzaC1yc2[...]MZgrTVSZqNZCRB" >> ~/.ssh/known_hosts
+
+ssh -XY -i ~/.ssh/id_rsa ubuntu@172.27.25.199
+
+#docker run --mount type=bind,source=/lustre/scratch123/mdt0/otar2069,target=/otar2069 --rm -ti -p 8787:8787 rocker/rstudio
+#docker run -e JAVA_HOME="/jv" -v /usr/*:/jv/* --rm -ti -p 8787:8787 rocker/rstudio
+# docker run -e JAVA_HOME="/jv" -v /usr/bin:/jv/ --rm -ti -p 8787:8787 rocker/rstudio
+# docker run -e JAVA_HOME="/jv" -v /usr/bin:/jv/bin/ --rm -ti -p 8787:8787 rocker/rstudio
+# docker run -e JAVA_HOME="/jv" -e SPARK_HOME=/opt/hadoop/ -v /usr/bin:/jv/ -v /opt/hadoop/:/opt/hadoop/ --rm -ti -p 8787:8787 rocker/rstudio
+docker run -e JAVA_HOME=/jv -v /usr/bin:/jv/bin/ --rm -ti -p 8787:8787 rocker/rstudio
+docker run --mount type=bind,source=/lustre/scratch123/mdt0/otar2069/,target=/otar2069 --rm -ti -p 8787:8787 stefanucciluca/ml_r_sparklyr
+
+
+
+If reboot the image loose connection to lustre
+
+
+trying before running docker
+sudo apt-get install -y default-jre
+sudo apt-get install -y default-jdk
+
+# Run once
+install.packages("sparklyr")
+# Connect to Spark local
+library(sparklyr)
+spark_install(version = "3.3")
+sc <- spark_connect(master = "local")
+
+
+I copied teh git repo and modified an rstudio dockerfile to install java
+
+name file: rstudio_4.1.0_spark_ml_ls31.Dockerfile
+
+then built the docker image with the command
+
+```docker build -t stefanucciluca/ml_r_sparklyr -f rstudio_4.1.0_spark_ml_ls31.Dockerfile ~/Documents/rocker-versioned2/dockerfiles/```
+
+`rag` package is not available for this version of R - What it`d be need for?
+
+The container works - now it needs to run on all the machines.
+It seems like docker compose is the way forward
+
+# following this guide: https://medium.com/@marcovillarreal_40011/creating-a-spark-standalone-cluster-with-docker-and-docker-compose-ba9d743a157f
+create  nano-spark-worker.sh
+create docker-compose.yml
+run the command `docker-compose up`
+
+
+# to use everything on the same VM
+library(sparklyr)
+# Set the configuration options for Spark
+conf <- spark_config()
+# Set the number of worker nodes to use
+conf$spark.executor.instances <- 6
+# Connect to the Spark cluster using sparklyr
+sc <- spark_connect(config = conf)
+
+
+# spark standalone
+library(sparklyr)
+spark_home <- Sys.getenv("SPARK_HOME")
+spark_path <- file.path(spark_home, "bin", "spark-class")
+system2(spark_path, "org.apache.spark.deploy.master.Master", wait = FALSE)
+# Link to master node, find master URL at http://localhost:8080/
+sc <- spark_connect(master = "spark://192.168.252.87:7077", spark_home = spark_home)
+# Start worker node
+system2(spark_path, c("org.apache.spark.deploy.worker.Worker",
+                      "spark://172.27.25.199:8080"), wait = T) NO
+                      
+                      
+system2(spark_path, c("org.apache.spark.deploy.worker.Worker",
+                      "spark://192.168.252.87:7077"), wait = T) NO
+                      
