@@ -82,10 +82,11 @@ RUN install2.r --error \
       variantspark \
       magrittr \
       tidyr \
-      biomaRt \ 
-      AnnotationHub \
-      GenomicRanges \
-      broom.mixed
+      broom.mixed \
+      BiocManager
+
+# Install biocanductor Pakcages
+RUN R -e "BiocManager::install(c('biomaRt', 'AnnotationHub', 'GenomicRanges'))"
 
 # Install Apache Spark
 RUN wget https://archive.apache.org/dist/spark/spark-3.2.0/spark-3.2.0-bin-hadoop3.2.tgz && \
