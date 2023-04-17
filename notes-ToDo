@@ -52,7 +52,10 @@ name file: rstudio_4.1.0_spark_ml_ls31.Dockerfile
 
 then built the docker image with the command
 
-```docker build -t stefanucciluca/ml_r_sparklyr -f rstudio_4.1.0_spark_ml_ls31.Dockerfile ~/Documents/rocker-versioned2/dockerfiles/```
+# This command works but fails for some memory problem:
+# ```docker build -t stefanucciluca/ml_r_sparklyr -f rstudio_4.1.0_spark_ml_ls31.Dockerfile ~/Documents/rocker-versioned2/dockerfiles/```
+# I use this instead which deactivates the UI-like set-up of the software:
+```DOCKER_BUILDKIT=0 docker build -t stefanucciluca/ml_r_sparklyr -f rstudio_4.1.0_spark_ml_ls31.Dockerfile ~/Documents/rocker-versioned2/dockerfiles/```
 
 `rag` package is not available for this version of R - What it`d be need for?
 
