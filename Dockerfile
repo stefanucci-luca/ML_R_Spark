@@ -1,4 +1,4 @@
-FROM rocker/r-ver:4.1.0
+FROM rocker/r-ver:4.2.0
 
 LABEL org.opencontainers.image.licenses="GPL-2.0-or-later" \
       org.opencontainers.image.source="https://github.com/rocker-org/rocker-versioned2" \
@@ -7,7 +7,7 @@ LABEL org.opencontainers.image.licenses="GPL-2.0-or-later" \
 
 ENV S6_VERSION=v2.1.0.2
 ENV RSTUDIO_VERSION=2022.02.3+492
-ENV DEFAULT_USER=rstudio
+ENV DEFAULT_USER=ls31
 ENV PANDOC_VERSION=default
 ENV CTAN_REPO=https://www.texlive.info/tlnet-archive/2022/10/30/tlnet
 
@@ -34,12 +34,29 @@ RUN /rocker_scripts/install_tidyverse.sh
 
 EXPOSE 8787
 
+# install archived dependencies
+RUN R -e "install.packages(pkgs='http://cran.nexr.com/src/contrib/speedglm_0.3-2.tar.gz', type='source', repos=NULL)"
+RUN R -e "install.packages(c('network', 'sna', 'ergm', 'coda', 'ROCR', 'statnet.common'))"
+RUN R -e "install.packages(pkgs='https://cran.r-project.org/src/contrib/Archive/btergm/btergm_1.10.6.tar.gz', type='source', repos=NULL)"
+
+# Fro some weird reason rstan and other packeage fails id run in the followinf command, becasue of the cran and otehr references
 # Install R packages
 RUN install2.r --error \
+    --deps TRUE \
+    rstan \
+    rstanarm \
+    rJava
+
+# Install R packages
+RUN install2.r --error \
+    # --deps TRUE \
+    -n 5 \
+    -r 'http://cran.rstudio.com' \
+    # -r 'http://glmmadmb.r-forge.r-project.org/repos' \
+    -r 'http://www.bioconductor.org/packages/release/bioc' \
       sparklyr \
       dplyr \
       DBI \
-      rJava \
       readr \
       knitr \
       rmarkdown \
@@ -60,7 +77,6 @@ RUN install2.r --error \
       bigrquery \
       googleCloudStorageR \
       data.table \ 
-      rstan \
       rsparkling \
       h2o \
       keras \
@@ -83,7 +99,25 @@ RUN install2.r --error \
       magrittr \
       tidyr \
       broom.mixed \
-      BiocManager
+      BiocManager \
+      RNOmni \
+      janitor \
+      rjson \
+      markdown \
+      bayestestR \
+      loo \
+      tidybayes \
+      glmnet \
+      bayesplot \
+      posterior \
+      caret \
+      dbplot \
+      yardstick \
+      BayesFactor \
+      lme4 \
+      remotes \
+      selectr \
+      caTools
 
 # Install biocanductor Pakcages
 RUN R -e "BiocManager::install(c('biomaRt', 'AnnotationHub', 'GenomicRanges'))"
@@ -98,5 +132,36 @@ RUN wget https://archive.apache.org/dist/spark/spark-3.2.0/spark-3.2.0-bin-hadoo
 ENV SPARK_HOME=/usr/local/spark
 ENV PATH="$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${SPARK_HOME}/bin"
 
+# Install python and Keras related (adapted from https://github.com/ivanvanderbyl/tensorflow-keras-docker/blob/master/Dockerfile)
+# Pick up some TF dependencies
+RUN apt-get update && apt-get install -y \
+        curl \
+        libfreetype6-dev \
+        libpng-dev \
+        libzmq3-dev \
+        pkg-config \
+        python3.8 \
+        python-numpy \
+        python3-pip \
+        python3-scipy \
+        git \
+        libhdf5-dev \
+        graphviz \
+        && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN pip3 --no-cache-dir install \
+        ipykernel \
+        jupyter \
+        numpy==1.22 \
+        matplotlib \
+        h5py \
+        pydot-ng \
+        graphviz \
+        tensorflow \
+        keras \
+        Theano \ 
+        ipykernel 
 
 CMD ["/init"]
