@@ -41,12 +41,25 @@ RUN R -e "install.packages(pkgs='https://cran.r-project.org/src/contrib/Archive/
 
 # Fro some weird reason rstan and other packeage fails id run in the followinf command, becasue of the cran and otehr references
 # Install R packages
-RUN install2.r --error \
+RUN install2.r \
+    --error \
     --deps TRUE \
     rstan \
     rstanarm \
-    rJava
-
+    rJava \ 
+    ### <- this packege probably failed error: unable to load shared object '/usr/local/lib/R/site-library/rJava/libs/rJava.so':
+            # libjvm.so: cannot open shared object file: No such file or directory
+    xlsx \
+    # adam \
+    # auto_adam \
+    # auto_arima \
+    # arima \
+    # arima_xgboost \
+    # auto_arima_xgboost \
+    # brulee \
+    # stan_glmer \
+    glmnet 
+    
 # Install R packages
 RUN install2.r --error \
     # --deps TRUE \
@@ -107,7 +120,6 @@ RUN install2.r --error \
       bayestestR \
       loo \
       tidybayes \
-      glmnet \
       bayesplot \
       posterior \
       caret \
@@ -117,7 +129,26 @@ RUN install2.r --error \
       lme4 \
       remotes \
       selectr \
-      caTools
+      caTools \
+      randomForest \
+      ranger \
+      gap \
+      vip \
+      pdp \
+      xgboost \
+      # h2o_gbm \
+      rpart \
+      dbarts \
+      flexsurv \
+      survival \
+      klaR \
+      naivebayes \
+      kernlab \
+      kknn \
+      mixOmics \
+      # nnetar \
+      tidypredict \
+      multidplyr 
 
 # Install biocanductor Pakcages
 RUN R -e "BiocManager::install(c('biomaRt', 'AnnotationHub', 'GenomicRanges'))"
