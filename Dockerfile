@@ -153,6 +153,11 @@ RUN install2.r --error \
 # Install biocanductor Pakcages
 RUN R -e "BiocManager::install(c('biomaRt', 'AnnotationHub', 'GenomicRanges'))"
 
+# Install R packages
+RUN install2.r --error \
+    # --deps TRUE \
+    IRkernel
+
 # Install Apache Spark
 RUN wget https://archive.apache.org/dist/spark/spark-3.2.0/spark-3.2.0-bin-hadoop3.2.tgz && \
     tar -xzf spark-3.2.0-bin-hadoop3.2.tgz && \
@@ -192,7 +197,6 @@ RUN pip3 --no-cache-dir install \
         graphviz \
         tensorflow \
         keras \
-        Theano \ 
-        ipykernel 
+        Theano 
 
 CMD ["/init"]
